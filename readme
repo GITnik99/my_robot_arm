@@ -1,0 +1,10 @@
+In order to launch this robot:
+
+1. Copy paste the following link in a web browser
+http://localhost:3000/
+
+2. Run the following commands in a terminal inside the container
+cd ~/catkin_ws
+catkin_make
+source devel/setup.bash
+roslaunch my_robot_arm display.launch

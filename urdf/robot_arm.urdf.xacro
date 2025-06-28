@@ -1,0 +1,547 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="medical_grade_neurosurgical_robot">
+
+  <!-- Properties for easy modification -->
+  <xacro:property name="PI" value="3.14159"/>
+  
+  <!-- Realistic medical robot proportions -->
+  <xacro:property name="base_height" value="0.08"/>
+  <xacro:property name="base_radius" value="0.06"/>
+  <xacro:property name="base_motor_radius" value="0.04"/>
+  <xacro:property name="base_motor_height" value="0.035"/>
+  
+  <xacro:property name="shoulder_length" value="0.10"/>
+  <xacro:property name="shoulder_radius" value="0.035"/>
+  <xacro:property name="shoulder_motor_radius" value="0.03"/>
+  <xacro:property name="shoulder_motor_height" value="0.04"/>
+  
+  <xacro:property name="upper_arm_length" value="0.22"/>
+  <xacro:property name="upper_arm_radius" value="0.028"/>
+  <xacro:property name="upper_arm_motor_radius" value="0.025"/>
+  <xacro:property name="upper_arm_motor_height" value="0.035"/>
+  
+  <xacro:property name="forearm_length" value="0.20"/>
+  <xacro:property name="forearm_radius" value="0.022"/>
+  <xacro:property name="forearm_motor_radius" value="0.02"/>
+  <xacro:property name="forearm_motor_height" value="0.03"/>
+  
+  <xacro:property name="wrist_length" value="0.08"/>
+  <xacro:property name="wrist_radius" value="0.02"/>
+  <xacro:property name="wrist_motor_radius" value="0.018"/>
+  <xacro:property name="wrist_motor_height" value="0.025"/>
+  
+  <xacro:property name="hand_length" value="0.06"/>
+  <xacro:property name="hand_radius" value="0.018"/>
+  <xacro:property name="hand_motor_radius" value="0.015"/>
+  <xacro:property name="hand_motor_height" value="0.02"/>
+  
+  <!-- Tool housing properties (contains the extendable needle) -->
+  <xacro:property name="tool_housing_length" value="0.08"/>
+  <xacro:property name="tool_housing_radius" value="0.008"/>
+  
+  <!-- Needle properties (the extendable 7th DOF) -->
+  <xacro:property name="needle_radius" value="0.0005"/>
+  <xacro:property name="needle_max_extension" value="0.12"/>
+
+  <!-- Medical-grade materials -->
+  <material name="medical_base">
+    <color rgba="0.3 0.3 0.35 1.0"/>
+  </material>
+  
+  <material name="medical_grey">
+    <color rgba="0.85 0.85 0.88 1.0"/>
+  </material>
+  
+  <material name="motor_black">
+    <color rgba="0.15 0.15 0.15 1.0"/>
+  </material>
+  
+  <material name="surgical_steel">
+    <color rgba="0.9 0.9 0.95 1.0"/>
+  </material>
+  
+  <material name="safety_orange">
+    <color rgba="1.0 0.4 0.0 1.0"/>
+  </material>
+  
+  <material name="cable_black">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+  
+  <!-- Needle material (highly visible for safety) -->
+  <material name="needle_gold">
+    <color rgba="1.0 0.8 0.0 1.0"/>
+  </material>
+
+  <!-- World Link (operating room reference) -->
+  <link name="world"/>
+  
+  <!-- Base Link Assembly (Professional base with motor housing) -->
+  <link name="base_link">
+    <!-- Main base platform -->
+    <visual>
+      <origin xyz="0 0 ${base_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${base_radius}" length="${base_height}"/>
+      </geometry>
+      <material name="medical_base"/>
+    </visual>
+    <!-- Motor housing on top -->
+    <visual>
+      <origin xyz="0 0 ${base_height + base_motor_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${base_motor_radius}" length="${base_motor_height}"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Mounting bolts (decorative) -->
+    <visual>
+      <origin xyz="0.04 0 ${base_height/4}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.003" length="0.01"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <visual>
+      <origin xyz="-0.04 0 ${base_height/4}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.003" length="0.01"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0.04 ${base_height/4}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.003" length="0.01"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <visual>
+      <origin xyz="0 -0.04 ${base_height/4}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.003" length="0.01"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 ${base_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${base_radius}" length="${base_height}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.5"/>
+      <origin xyz="0 0 ${base_height/2}" rpy="0 0 0"/>
+      <inertia ixx="0.035" ixy="0" ixz="0" iyy="0.035" iyz="0" izz="0.055"/>
+    </inertial>
+  </link>
+
+  <!-- World to Base Joint (fixed mounting) -->
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Shoulder Link Assembly -->
+  <link name="shoulder_link">
+    <!-- Main shoulder structure -->
+    <visual>
+      <origin xyz="0 0 ${shoulder_length/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${shoulder_radius}" length="${shoulder_length}"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <!-- Motor housing at top -->
+    <visual>
+      <origin xyz="0 0 ${shoulder_length + shoulder_motor_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${shoulder_motor_radius}" length="${shoulder_motor_height}"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Cable management -->
+    <visual>
+      <origin xyz="${shoulder_radius/2} 0 ${shoulder_length/2}" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.008 0.008 ${shoulder_length}"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <!-- Safety stripe -->
+    <visual>
+      <origin xyz="0 0 ${shoulder_length - 0.01}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${shoulder_radius + 0.001}" length="0.005"/>
+      </geometry>
+      <material name="safety_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 ${shoulder_length/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${shoulder_radius}" length="${shoulder_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.8"/>
+      <origin xyz="0 0 ${shoulder_length/2}" rpy="0 0 0"/>
+      <inertia ixx="0.015" ixy="0" ixz="0" iyy="0.015" iyz="0" izz="0.008"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 1: Shoulder Roll (IDENTICAL movement) -->
+  <joint name="shoulder_roll" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin xyz="0 0 ${base_height + base_motor_height}" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-PI/2}" upper="${PI/2}" effort="10.0" velocity="1.0"/>
+  </joint>
+
+  <!-- Upper Arm Link Assembly (Humerus) -->
+  <link name="upper_arm_link">
+    <!-- Main upper arm structure -->
+    <visual>
+      <origin xyz="0 ${upper_arm_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${upper_arm_radius}" length="${upper_arm_length}"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <!-- Motor housing at shoulder end -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${upper_arm_motor_radius}" length="${upper_arm_motor_height}"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Reinforcement plates -->
+    <visual>
+      <origin xyz="0 ${upper_arm_length/4} 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.02 0.03"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <visual>
+      <origin xyz="0 ${3*upper_arm_length/4} 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.05 0.02 0.03"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <!-- Cable routing -->
+    <visual>
+      <origin xyz="${upper_arm_radius/2} ${upper_arm_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.004" length="${upper_arm_length}"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 ${upper_arm_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${upper_arm_radius}" length="${upper_arm_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2.2"/>
+      <origin xyz="0 ${upper_arm_length/2} 0" rpy="0 0 0"/>
+      <inertia ixx="0.08" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.08"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 2: Shoulder Pitch (IDENTICAL movement) -->
+  <joint name="shoulder_pitch" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0 0 ${shoulder_length + shoulder_motor_height}" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-PI/6}" upper="${5*PI/6}" effort="8.0" velocity="1.0"/>
+  </joint>
+
+  <!-- Forearm Link Assembly (Radius/Ulna) -->
+  <link name="forearm_link">
+    <!-- Main forearm structure -->
+    <visual>
+      <origin xyz="0 ${forearm_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${forearm_radius}" length="${forearm_length}"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <!-- Motor housing at elbow -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${forearm_motor_radius}" length="${forearm_motor_height}"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Structural reinforcement -->
+    <visual>
+      <origin xyz="0 ${forearm_length/3} 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.04 0.015 0.025"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <visual>
+      <origin xyz="0 ${2*forearm_length/3} 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.04 0.015 0.025"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <!-- Cable management -->
+    <visual>
+      <origin xyz="${forearm_radius/2} ${forearm_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.003" length="${forearm_length}"/>
+      </geometry>
+      <material name="cable_black"/>
+    </visual>
+    <collision>
+      <origin xyz="0 ${forearm_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${forearm_radius}" length="${forearm_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="1.5"/>
+      <origin xyz="0 ${forearm_length/2} 0" rpy="0 0 0"/>
+      <inertia ixx="0.05" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.05"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 3: Shoulder Yaw (IDENTICAL movement) -->
+  <joint name="shoulder_yaw" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0 ${upper_arm_length} 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="${-PI/9}" upper="${PI/2}" effort="6.0" velocity="1.0"/>
+  </joint>
+
+  <!-- Wrist Link Assembly -->
+  <link name="wrist_link">
+    <!-- Main wrist structure -->
+    <visual>
+      <origin xyz="0 ${wrist_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wrist_radius}" length="${wrist_length}"/>
+      </geometry>
+      <material name="medical_grey"/>
+    </visual>
+    <!-- Motor housing -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${wrist_motor_radius}" length="${wrist_motor_height}"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Joint cover -->
+    <visual>
+      <origin xyz="0 ${wrist_length} 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${wrist_radius + 0.002}" length="0.01"/>
+      </geometry>
+      <material name="safety_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0 ${wrist_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${wrist_radius}" length="${wrist_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.8"/>
+      <origin xyz="0 ${wrist_length/2} 0" rpy="0 0 0"/>
+      <inertia ixx="0.004" ixy="0" ixz="0" iyy="0.002" iyz="0" izz="0.004"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 4: Elbow Flexion (IDENTICAL movement) -->
+  <joint name="elbow_flexion" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_link"/>
+    <origin xyz="0 ${forearm_length} 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-PI/6}" upper="${5*PI/6}" effort="4.0" velocity="1.0"/>
+  </joint>
+
+  <!-- Hand Link Assembly -->
+  <link name="hand_link">
+    <!-- Main hand structure -->
+    <visual>
+      <origin xyz="0 ${hand_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${hand_radius}" length="${hand_length}"/>
+      </geometry>
+      <material name="surgical_steel"/>
+    </visual>
+    <!-- Motor housing -->
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${hand_motor_radius}" length="${hand_motor_height}"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Tool interface -->
+    <visual>
+      <origin xyz="0 ${hand_length} 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${hand_radius - 0.002}" length="0.005"/>
+      </geometry>
+      <material name="safety_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0 ${hand_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${hand_radius}" length="${hand_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.4"/>
+      <origin xyz="0 ${hand_length/2} 0" rpy="0 0 0"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.0008" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 5: Wrist Roll (IDENTICAL movement) -->
+  <joint name="wrist_roll" type="revolute">
+    <parent link="wrist_link"/>
+    <child link="hand_link"/>
+    <origin xyz="0 ${wrist_length} 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-PI/2}" upper="${PI/2}" effort="2.0" velocity="2.0"/>
+  </joint>
+
+  <!-- Tool Housing Link (Contains the needle extension mechanism) -->
+  <link name="tool_housing_link">
+    <!-- Main tool housing -->
+    <visual>
+      <origin xyz="0 ${tool_housing_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${tool_housing_radius}" length="${tool_housing_length}"/>
+      </geometry>
+      <material name="surgical_steel"/>
+    </visual>
+    <!-- Housing interface -->
+    <visual>
+      <origin xyz="0 0.01 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.006" length="0.02"/>
+      </geometry>
+      <material name="motor_black"/>
+    </visual>
+    <!-- Extension mechanism housing -->
+    <visual>
+      <origin xyz="0 ${tool_housing_length - 0.015} 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="${tool_housing_radius + 0.002}" length="0.02"/>
+      </geometry>
+      <material name="safety_orange"/>
+    </visual>
+    <!-- Needle guide -->
+    <visual>
+      <origin xyz="0 ${tool_housing_length} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.001" length="0.005"/>
+      </geometry>
+      <material name="needle_gold"/>
+    </visual>
+    <collision>
+      <origin xyz="0 ${tool_housing_length/2} 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${tool_housing_radius}" length="${tool_housing_length}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.12"/>
+      <origin xyz="0 ${tool_housing_length/2} 0" rpy="0 0 0"/>
+      <inertia ixx="0.0002" ixy="0" ixz="0" iyy="0.0002" iyz="0" izz="0.00002"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 6: Wrist Pitch (IDENTICAL movement) -->
+  <joint name="wrist_pitch" type="revolute">
+    <parent link="hand_link"/>
+    <child link="tool_housing_link"/>
+    <origin xyz="0 ${hand_length} 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="${-PI/4}" upper="${PI/4}" effort="1.0" velocity="2.0"/>
+  </joint>
+
+  <!-- Needle Link (Dynamic length needle - grows in both directions) -->
+  <link name="needle_link">
+    <!-- Extended needle rear section (extends much further backward into housing) -->
+    <visual>
+      <origin xyz="0 -0.06 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.0008" length="0.12"/>
+      </geometry>
+      <material name="surgical_steel"/>
+    </visual>
+    <!-- Main needle body (extends forward) -->
+    <visual>
+      <origin xyz="0 0.06 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="${needle_radius}" length="0.12"/>
+      </geometry>
+      <material name="needle_gold"/>
+    </visual>
+    <!-- Needle tip -->
+    <visual>
+      <origin xyz="0 0.12 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="${needle_radius * 1.5}"/>
+      </geometry>
+      <material name="needle_gold"/>
+    </visual>
+    <!-- Connection piece (always at housing exit) -->
+    <visual>
+      <origin xyz="0 0.001 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.001" length="0.002"/>
+      </geometry>
+      <material name="safety_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0.03 0" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.001" length="0.18"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.006"/>
+      <origin xyz="0 0.03 0" rpy="0 0 0"/>
+      <inertia ixx="0.000006" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.000006"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 7: Needle Extension (NEW 7th DOF - Prismatic) -->
+  <!-- The needle grows in both directions: -->
+  <!-- - Forward: for surgical reach -->
+  <!-- - Backward: to maintain connection with housing mechanism -->
+  <joint name="needle_extension" type="prismatic">
+    <parent link="tool_housing_link"/>
+    <child link="needle_link"/>
+    <origin xyz="0 ${tool_housing_length} 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0.0" upper="${needle_max_extension}" effort="5.0" velocity="0.05"/>
+  </joint>
+
+  <!-- Needle Tip Frame (for precise neurosurgical targeting) -->
+  <link name="needle_tip"/>
+  <joint name="needle_tip_joint" type="fixed">
+    <parent link="needle_link"/>
+    <child link="needle_tip"/>
+    <origin xyz="0 0.12 0" rpy="0 0 0"/>
+  </joint>
+
+</robot>

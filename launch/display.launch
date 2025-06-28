@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <param name="robot_description" 
+         command="$(find xacro)/xacro --inorder $(find my_robot_arm)/urdf/robot_arm.urdf.xacro" />
+
+  <!-- Send fake joint values (for visualization) -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="true"/>
+    <rosparam param="source_list">[/joint_states]</rosparam>
+  </node>
+
+  <!-- Combine joint values and publish robot state -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0" />
+  </node>
+
+  <!-- Launch RViz with custom configuration -->
+  <node name="rviz" pkg="rviz" type="rviz" 
+        args="-d $(find my_robot_arm)/rviz/neurosurgical_robot.rviz" 
+        required="true" />
+</launch>
