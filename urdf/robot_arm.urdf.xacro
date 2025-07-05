@@ -4,6 +4,11 @@
   <!-- Properties for easy modification -->
   <xacro:property name="PI" value="3.14159"/>
   
+  <!-- Wall plate properties -->
+  <xacro:property name="plate_width" value="0.8"/>
+  <xacro:property name="plate_height" value="0.6"/>
+  <xacro:property name="plate_thickness" value="0.05"/>
+  
   <!-- Wall mounting properties -->
   <xacro:property name="wall_mount_height" value="0.15"/>
   <xacro:property name="wall_mount_width" value="0.20"/>
@@ -85,9 +90,72 @@
   <material name="wall_mount_steel">
     <color rgba="0.7 0.7 0.75 1.0"/>
   </material>
+  
+  <!-- Wall plate material -->
+  <material name="wall_surface">
+    <color rgba="0.9 0.9 0.92 1.0"/>
+  </material>
+  
+  <material name="mounting_holes">
+    <color rgba="0.3 0.3 0.3 1.0"/>
+  </material>
 
-  <!-- World Link (operating room wall reference) -->
-  <link name="world"/>
+  <!-- World Link (FIXED - Wall bottom now sits at grid level) -->
+  <link name="world">
+    <!-- Main wall plate surface - MOVED UP so bottom sits at Z=0 -->
+    <visual>
+      <origin xyz="0 0 ${plate_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${plate_width} ${plate_thickness} ${plate_height}"/>
+      </geometry>
+      <material name="wall_surface"/>
+    </visual>
+    
+    <!-- Mounting holes (decorative) - ADJUSTED for new wall position -->
+    <visual>
+      <origin xyz="0.2 ${-plate_thickness/2 - 0.002} ${plate_height/2 + 0.15}" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.005" length="0.008"/>
+      </geometry>
+      <material name="mounting_holes"/>
+    </visual>
+    <visual>
+      <origin xyz="-0.2 ${-plate_thickness/2 - 0.002} ${plate_height/2 + 0.15}" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.005" length="0.008"/>
+      </geometry>
+      <material name="mounting_holes"/>
+    </visual>
+    <visual>
+      <origin xyz="0.2 ${-plate_thickness/2 - 0.002} ${plate_height/2 - 0.15}" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.005" length="0.008"/>
+      </geometry>
+      <material name="mounting_holes"/>
+    </visual>
+    <visual>
+      <origin xyz="-0.2 ${-plate_thickness/2 - 0.002} ${plate_height/2 - 0.15}" rpy="${PI/2} 0 0"/>
+      <geometry>
+        <cylinder radius="0.005" length="0.008"/>
+      </geometry>
+      <material name="mounting_holes"/>
+    </visual>
+    
+    <!-- Collision - MOVED UP to match visual -->
+    <collision>
+      <origin xyz="0 0 ${plate_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${plate_width} ${plate_thickness} ${plate_height}"/>
+      </geometry>
+    </collision>
+    
+    <!-- Inertial properties - MOVED UP to match -->
+    <inertial>
+      <mass value="5.0"/>
+      <origin xyz="0 0 ${plate_height/2}" rpy="0 0 0"/>
+      <inertia ixx="0.6" ixy="0" ixz="0" iyy="0.88" iyz="0" izz="0.53"/>
+    </inertial>
+  </link>
   
   <!-- Wall Bracket Link (Fixed to wall) -->
   <link name="wall_bracket">
@@ -211,11 +279,11 @@
     </inertial>
   </link>
 
-  <!-- World to Wall Bracket Joint (fixed to wall) -->
+  <!-- World to Wall Bracket Joint (fixed to wall plate) -->
   <joint name="world_to_wall_bracket" type="fixed">
     <parent link="world"/>
     <child link="wall_bracket"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 ${plate_thickness/2} ${plate_height/2}" rpy="0 0 0"/>
   </joint>
   
   <!-- Wall Bracket to Mount Joint (fixed extension from wall) -->
